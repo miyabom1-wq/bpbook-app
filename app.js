@@ -1,4 +1,4 @@
-// ====== 血圧管理ブック (PWA) v8 ======
+// ====== 血圧管理ブック (PWA) v8.1 ======
 const STORAGE_KEY = 'bpbook_entries_v1';
 
 const $ = (sel) => document.querySelector(sel);
@@ -6,7 +6,6 @@ function fmt(ts){
   const d = new Date(ts);
   const yy = String(d.getFullYear()).slice(2);
   const mm = String(d.getMonth()+1).padStart(2,'0');
-  const dd = String(d.getDate()).slice(0,2).padStart(2,'0'); // ensure day
   const day = String(d.getDate()).padStart(2,'0');
   const hh = String(d.getHours()).padStart(2,'0');
   const mi = String(d.getMinutes()).padStart(2,'0');
@@ -61,7 +60,7 @@ if(btnAdd) btnAdd.addEventListener('click', ()=>{
 
 if(rangeSelect) rangeSelect.addEventListener('change', (e)=>{ rangeMode = e.target.value; renderChart(); });
 
-if(btnExport) btnExport.addEventListener('click', ()=>{
+if(btnExport) btnExport?.addEventListener('click', ()=>{
   const lines = ['timestamp,systolic,diastolic,pulse'];
   entries.forEach(e=>lines.push(`${e.ts},${e.s},${e.d},${e.p}`));
   const blob = new Blob([lines.join('\\n')], {type:'text/csv'});
@@ -69,7 +68,7 @@ if(btnExport) btnExport.addEventListener('click', ()=>{
   const a = document.createElement('a'); a.href = url; a.download = 'bpbook.csv'; a.click();
   URL.revokeObjectURL(url);
 });
-if(fileImport) fileImport.addEventListener('change', async (ev)=>{
+if(fileImport) fileImport?.addEventListener('change', async (ev)=>{
   const file = ev.target.files?.[0]; if(!file) return;
   const text = await file.text();
   const out = [];
@@ -183,7 +182,8 @@ function renderChart(){
       ]
     },
     options: {
-      responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
       plugins: { legend: { labels: { color: '#6b7280' } } },
       scales: { x: { ticks: { color: '#6b7280', maxRotation: 0, autoSkip: true }, grid: { color: '#e5e7eb' } },
                 y: { grid: { color: '#e5e7eb' }, ticks: { color: '#6b7280' } } }
@@ -191,5 +191,4 @@ function renderChart(){
   });
 }
 
-// First paint
 renderTables(); renderChart();

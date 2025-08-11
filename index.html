@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>血圧管理ブック (PWA)</title>
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="style.css?v=8">
+  <link rel="stylesheet" href="style.css?v=8.1">
   <meta name="theme-color" content="#ffffff">
   <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script defer src="app.js?v=8"></script>
+  <script defer src="app.js?v=8.1"></script>
 </head>
 <body>
   <header>
@@ -20,7 +20,6 @@
   </header>
 
   <main>
-    <!-- Home Page -->
     <section id="page-home">
       <section class="form-card">
         <div class="field">
@@ -62,11 +61,12 @@
             <option value="all">全件</option>
           </select>
         </div>
-        <canvas id="chart" height="160"></canvas>
+        <div class="chart-wrap">
+          <canvas id="chart"></canvas>
+        </div>
       </section>
     </section>
 
-    <!-- All records -->
     <section id="page-all" class="hidden">
       <section class="table-card">
         <div class="table-title-row">

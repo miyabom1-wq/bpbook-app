@@ -41,6 +41,8 @@ tbody tr:nth-child(odd){background:var(--stripe)}
 .value.warn{color:var(--warn);font-weight:600}
 .value.bad{color:var(--bad);font-weight:600}
 .chart-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;color:#334155}
+.chart-wrap{position:relative;height:220px}
+#chart{position:absolute;inset:0;width:100% !important;height:100% !important;display:block}
 @media (max-width:540px){
   thead{display:none}
   table, tbody, tr, td{display:block;width:100%}
@@ -48,6 +50,6 @@ tbody tr:nth-child(odd){background:var(--stripe)}
   tbody tr:nth-child(odd){background:var(--card)}
   td{border:none;padding:6px 4px}
   td.col-date{font-weight:600;color:#334155}
-  td.col-num::before{content:attr(data-label);float:left;color:var(--muted)}
+  td.col-num::before{content:attr(data-label);float:left;color:#6b7280}
   .row-actions{justify-content:flex-end;border-top:1px dashed var(--border);padding-top:6px;margin-top:4px}
 }

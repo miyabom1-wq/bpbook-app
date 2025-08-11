@@ -1,9 +1,9 @@
-const CACHE_NAME = 'bpbook-cache-v8';
+const CACHE_NAME = 'bpbook-cache-v8_1';
 const APP_SHELL = [
   './',
   './index.html',
-  './style.css?v=8',
-  './app.js?v=8',
+  './style.css?v=8.1',
+  './app.js?v=8.1',
   './manifest.webmanifest',
   './icons/icon-192.png',
   './icons/icon-512.png',
