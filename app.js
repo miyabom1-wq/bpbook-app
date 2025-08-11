@@ -1,45 +1,36 @@
-// ====== 血圧管理ブック (PWA) v7 ======
+// ====== 血圧管理ブック (PWA) v8 ======
 const STORAGE_KEY = 'bpbook_entries_v1';
-const OPTS_KEY = 'bpbook_options_v1';
 
 const $ = (sel) => document.querySelector(sel);
 function fmt(ts){
   const d = new Date(ts);
   const yy = String(d.getFullYear()).slice(2);
   const mm = String(d.getMonth()+1).padStart(2,'0');
-  const dd = String(d.getDate()).padStart(2,'0');
+  const dd = String(d.getDate()).slice(0,2).padStart(2,'0'); // ensure day
+  const day = String(d.getDate()).padStart(2,'0');
   const hh = String(d.getHours()).padStart(2,'0');
   const mi = String(d.getMinutes()).padStart(2,'0');
-  return `${yy}/${mm}/${dd} ${hh}:${mi}`;
+  return `${yy}/${mm}/${day} ${hh}:${mi}`;
 }
 function loadEntries(){
   try { const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : []; }
   catch { return []; }
 }
 function saveEntries(list){ localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); }
-function loadOpts(){
-  try { return JSON.parse(localStorage.getItem(OPTS_KEY)) || { showPulse:true, showFooter:false }; }
-  catch { return { showPulse:true, showFooter:false }; }
-}
-function saveOpts(o){ localStorage.setItem(OPTS_KEY, JSON.stringify(o)); }
 function classifySys(v){ if(v>=140) return 'bad'; if(v>=130) return 'warn'; if(v>=120) return 'warn'; return 'good'; }
 function classifyDia(v){ if(v>=90) return 'bad'; if(v>=80) return 'warn'; return 'good'; }
 
 let entries = loadEntries();
-let opts = loadOpts();
 let chart;
 let rangeMode = '30';
 
 const dt = $('#dt'); const sys = $('#sys'); const dia = $('#dia'); const pul = $('#pul');
 const btnAdd = $('#btn-add'); const btnNow = $('#btn-now');
 const tbodyHome = $('#list-home tbody'); const tbodyAll = $('#list-all tbody');
-const rangeSelect = $('#range-select'); const btnExport = $('#menu-export'); const fileImport = $('#file-import');
+const rangeSelect = $('#range-select'); const btnExport = $('#btn-export'); const fileImport = $('#file-import');
 const pageHome = $('#page-home'); const pageAll = $('#page-all');
-const chartCanvas = $('#chart'); const footerNote = $('#footer-note');
-const btnMenu = $('#btn-menu'); const menu = $('#menu');
-const btnSettings = $('#btn-settings'); const modal = $('#settings-modal');
-const optPulse = $('#opt-show-pulse'); const optFooter = $('#opt-show-footer');
-const btnSettingsSave = $('#settings-save'); const btnSettingsClose = $('#settings-close');
+const navHome = $('#nav-home'); const navAll = $('#nav-all');
+const chartCanvas = $('#chart');
 
 function setNow(){
   if(!dt) return;
@@ -78,7 +69,6 @@ if(btnExport) btnExport.addEventListener('click', ()=>{
   const a = document.createElement('a'); a.href = url; a.download = 'bpbook.csv'; a.click();
   URL.revokeObjectURL(url);
 });
-
 if(fileImport) fileImport.addEventListener('change', async (ev)=>{
   const file = ev.target.files?.[0]; if(!file) return;
   const text = await file.text();
@@ -100,51 +90,16 @@ if(fileImport) fileImport.addEventListener('change', async (ev)=>{
   saveEntries(entries); renderTables(); renderChart(); ev.target.value=''; alert('CSVを取り込みました');
 });
 
-if(btnMenu) btnMenu.addEventListener('click', (e)=>{ e.stopPropagation(); menu.classList.toggle('hidden'); });
-document.addEventListener('click', ()=> menu.classList.add('hidden'));
-
-function openSettings(){
-  if(optPulse) optPulse.checked = !!opts.showPulse;
-  if(optFooter) optFooter.checked = !!opts.showFooter;
-  modal.classList.remove('hidden');
-}
-function closeSettings(){ modal.classList.add('hidden'); }
-
-if(btnSettings) btnSettings.addEventListener('click', (e)=>{ e.stopPropagation(); menu.classList.add('hidden'); openSettings(); });
-
-function saveSettingsAndClose(){
-  try{
-    if(optPulse) opts.showPulse = !!optPulse.checked;
-    if(optFooter) opts.showFooter = !!optFooter.checked;
-    saveOpts(opts);
-    applyOptions();
-  }catch(e){ console.error('settings save error', e); }
-  closeSettings();
-}
-if(btnSettingsSave) btnSettingsSave.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); saveSettingsAndClose(); });
-if(btnSettingsClose) btnSettingsClose.addEventListener('click', (e)=>{ e.preventDefault(); closeSettings(); });
-document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') closeSettings(); });
-if(modal) modal.addEventListener('click', (e)=>{ if(e.target === modal) closeSettings(); });
-document.addEventListener('click', (e)=>{
-  if(e.target instanceof Element && e.target.closest('#settings-save')){ e.preventDefault(); saveSettingsAndClose(); }
-});
-
 function go(hash){
   if(hash==='#all'){ pageHome.classList.add('hidden'); pageAll.classList.remove('hidden'); }
   else { pageAll.classList.add('hidden'); pageHome.classList.remove('hidden'); }
   renderTables(); renderChart();
   if(location.hash !== hash) location.hash = hash;
 }
-const navHome = $('#nav-home'); const navAll = $('#nav-all');
 if(navHome) navHome.addEventListener('click', ()=>go('#home'));
 if(navAll) navAll.addEventListener('click', ()=>go('#all'));
 window.addEventListener('hashchange', ()=> go(location.hash||'#home'));
 go(location.hash||'#home');
-
-function applyOptions(){
-  document.querySelectorAll('.col-pulse, td.col-pulse').forEach(el=>{ el.style.display = opts.showPulse ? '' : 'none'; });
-  if(opts.showFooter) footerNote.classList.remove('hidden'); else footerNote.classList.add('hidden');
-}
 
 function renderTables(){
   const latest = entries.slice(0,5);
@@ -152,12 +107,11 @@ function renderTables(){
   attachRowActions(tbodyHome);
   tbodyAll.innerHTML = entries.map(rowHtml).join('');
   attachRowActions(tbodyAll);
-  applyOptions();
+
   const narrow = matchMedia('(max-width:540px)').matches;
   if(narrow){
     document.querySelectorAll('tbody td.col-num').forEach((td, i)=>{
-      const cols = opts.showPulse ? 3 : 2;
-      const mod = i % cols;
+      const mod = i % 3;
       const label = mod===0 ? '収縮' : (mod===1 ? '拡張' : '脈拍');
       td.setAttribute('data-label', label);
     });
@@ -167,12 +121,11 @@ function renderTables(){
 function rowHtml(e){
   const clsS = classifySys(e.s);
   const clsD = classifyDia(e.d);
-  const pulseCell = `<td class="num col-num col-pulse">${e.p}</td>`;
   return `<tr data-id="${e.id}">
     <td class="col-date">${fmt(e.ts)}</td>
     <td class="num col-num"><span class="value ${clsS}">${e.s}</span></td>
     <td class="num col-num"><span class="value ${clsD}">${e.d}</span></td>
-    ${pulseCell}
+    <td class="num col-num">${e.p}</td>
     <td class="col-actions"><div class="row-actions">
       <button data-act="edit">編集</button>
       <button data-act="del">削除</button>
@@ -238,5 +191,5 @@ function renderChart(){
   });
 }
 
-applyOptions();
+// First paint
 renderTables(); renderChart();

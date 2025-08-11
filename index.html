@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>血圧管理ブック (PWA)</title>
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="style.css?v=7">
+  <link rel="stylesheet" href="style.css?v=8">
   <meta name="theme-color" content="#ffffff">
   <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script defer src="app.js?v=7"></script>
+  <script defer src="app.js?v=8"></script>
 </head>
 <body>
   <header>
@@ -16,26 +16,11 @@
     <div class="actions">
       <button id="nav-home">ホーム</button>
       <button id="nav-all">全記録</button>
-      <div class="menu-wrap">
-        <button id="btn-menu">︙</button>
-        <div id="menu" class="menu hidden">
-          <button id="menu-export">CSV出力</button>
-          <label class="import-label">CSV取込 <input type="file" id="file-import" accept=".csv,text/csv"></label>
-          <div class="menu-row">
-            <label for="range-select" class="menu-label">グラフ範囲</label>
-            <select id="range-select">
-              <option value="30">直近30件</option>
-              <option value="90">直近90件</option>
-              <option value="all">全件</option>
-            </select>
-          </div>
-          <button id="btn-settings">設定</button>
-        </div>
-      </div>
     </div>
   </header>
 
   <main>
+    <!-- Home Page -->
     <section id="page-home">
       <section class="form-card">
         <div class="field">
@@ -60,7 +45,7 @@
               <th class="col-date">日付</th>
               <th class="num col-num">収縮</th>
               <th class="num col-num">拡張</th>
-              <th class="num col-num col-pulse">脈拍</th>
+              <th class="num col-num">脈拍</th>
               <th class="col-actions"></th>
             </tr>
           </thead>
@@ -69,20 +54,35 @@
       </section>
 
       <section class="chart-card">
+        <div class="chart-head">
+          <span>推移</span>
+          <select id="range-select">
+            <option value="30">直近30件</option>
+            <option value="90">直近90件</option>
+            <option value="all">全件</option>
+          </select>
+        </div>
         <canvas id="chart" height="160"></canvas>
       </section>
     </section>
 
+    <!-- All records -->
     <section id="page-all" class="hidden">
       <section class="table-card">
-        <div class="table-title">全記録</div>
+        <div class="table-title-row">
+          <div class="table-title">全記録</div>
+          <div class="table-tools">
+            <button id="btn-export" class="ghost">CSV出力</button>
+            <label class="ghost">CSV取込 <input type="file" id="file-import" accept=".csv,text/csv"></label>
+          </div>
+        </div>
         <table id="list-all">
           <thead>
             <tr>
               <th class="col-date">日付</th>
               <th class="num col-num">収縮</th>
               <th class="num col-num">拡張</th>
-              <th class="num col-num col-pulse">脈拍</th>
+              <th class="num col-num">脈拍</th>
               <th class="col-actions"></th>
             </tr>
           </thead>
@@ -91,33 +91,6 @@
       </section>
     </section>
   </main>
-
-  <footer id="footer-note" class="hidden">
-    <small>データは端末内に保存されます（オフライン可）</small>
-  </footer>
-
-  <div id="settings-modal" class="modal hidden">
-    <div class="modal-card">
-      <div class="modal-head">
-        <h2>設定</h2>
-        <button id="settings-close" type="button">✕</button>
-      </div>
-      <div class="modal-body">
-        <label class="toggle">
-          <input type="checkbox" id="opt-show-pulse" checked>
-          <span>脈拍の列を表示</span>
-        </label>
-        <label class="toggle">
-          <input type="checkbox" id="opt-show-footer">
-          <span>下部の説明文を表示</span>
-        </label>
-        <div class="desc">※ 設定はこの端末に保存されます。</div>
-      </div>
-      <div class="modal-foot">
-        <button id="settings-save" class="primary" type="button">保存</button>
-      </div>
-    </div>
-  </div>
 
   <script>
     if ('serviceWorker' in navigator) {
