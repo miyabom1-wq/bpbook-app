@@ -45,11 +45,10 @@ tbody tr:nth-child(odd){background:var(--stripe)}
 footer{padding:10px 16px;color:var(--muted);text-align:center}
 
 @media (max-width:540px){
-  /* Card-like rows to avoid overlap */
   thead{display:none}
   table, tbody, tr, td{display:block;width:100%}
   tbody tr{background:var(--card);border:1px solid var(--border);border-radius:12px;margin:8px 0;padding:8px}
-  tbody tr:nth-child(odd){background:var(--card)} /* disable zebra on cards */
+  tbody tr:nth-child(odd){background:var(--card)}
   td{border:none;padding:6px 4px}
   td.col-date{font-weight:600;color:#334155}
   td.col-num::before{content:attr(data-label);float:left;color:var(--muted)}

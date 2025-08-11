@@ -1,8 +1,7 @@
-// ====== 血圧管理ブック (PWA) v5 ======
+// ====== 血圧管理ブック (PWA) v7 ======
 const STORAGE_KEY = 'bpbook_entries_v1';
 const OPTS_KEY = 'bpbook_options_v1';
 
-// ---------- Utils ----------
 const $ = (sel) => document.querySelector(sel);
 function fmt(ts){
   const d = new Date(ts);
@@ -23,33 +22,25 @@ function loadOpts(){
   catch { return { showPulse:true, showFooter:false }; }
 }
 function saveOpts(o){ localStorage.setItem(OPTS_KEY, JSON.stringify(o)); }
-
-// 値の色分け（目安）
 function classifySys(v){ if(v>=140) return 'bad'; if(v>=130) return 'warn'; if(v>=120) return 'warn'; return 'good'; }
 function classifyDia(v){ if(v>=90) return 'bad'; if(v>=80) return 'warn'; return 'good'; }
 
-// ---------- State ----------
-let entries = loadEntries(); // {id, ts, s, d, p}
-let opts = loadOpts();       // {showPulse, showFooter}
+let entries = loadEntries();
+let opts = loadOpts();
 let chart;
-let rangeMode = '30'; // '30' | '90' | 'all'
+let rangeMode = '30';
 
-// ---------- DOM refs ----------
 const dt = $('#dt'); const sys = $('#sys'); const dia = $('#dia'); const pul = $('#pul');
 const btnAdd = $('#btn-add'); const btnNow = $('#btn-now');
 const tbodyHome = $('#list-home tbody'); const tbodyAll = $('#list-all tbody');
 const rangeSelect = $('#range-select'); const btnExport = $('#menu-export'); const fileImport = $('#file-import');
 const pageHome = $('#page-home'); const pageAll = $('#page-all');
-const navHome = $('#nav-home'); const navAll = $('#nav-all');
-const chartCanvas = $('#chart');
-const footerNote = $('#footer-note');
-// menu & settings
+const chartCanvas = $('#chart'); const footerNote = $('#footer-note');
 const btnMenu = $('#btn-menu'); const menu = $('#menu');
-const btnSettings = $('#btn-settings');
-const modal = $('#settings-modal'); const optPulse = $('#opt-show-pulse'); const optFooter = $('#opt-show-footer');
+const btnSettings = $('#btn-settings'); const modal = $('#settings-modal');
+const optPulse = $('#opt-show-pulse'); const optFooter = $('#opt-show-footer');
 const btnSettingsSave = $('#settings-save'); const btnSettingsClose = $('#settings-close');
 
-// ---------- Init ----------
 function setNow(){
   if(!dt) return;
   const n = new Date();
@@ -109,61 +100,49 @@ if(fileImport) fileImport.addEventListener('change', async (ev)=>{
   saveEntries(entries); renderTables(); renderChart(); ev.target.value=''; alert('CSVを取り込みました');
 });
 
-// Menu toggle
-if(btnMenu) btnMenu.addEventListener('click', (e)=>{
-  e.stopPropagation();
-  menu.classList.toggle('hidden');
-});
+if(btnMenu) btnMenu.addEventListener('click', (e)=>{ e.stopPropagation(); menu.classList.toggle('hidden'); });
 document.addEventListener('click', ()=> menu.classList.add('hidden'));
 
-// Settings modal
 function openSettings(){
-  optPulse.checked = !!opts.showPulse;
-  optFooter.checked = !!opts.showFooter;
+  if(optPulse) optPulse.checked = !!opts.showPulse;
+  if(optFooter) optFooter.checked = !!opts.showFooter;
   modal.classList.remove('hidden');
 }
 function closeSettings(){ modal.classList.add('hidden'); }
-if(btnSettings) btnSettings.addEventListener('click', (e)=>{ e.stopPropagation(); if(menu) menu.classList.add('hidden'); openSettings(); });
-if(btnSettingsClose) btnSettingsClose.addEventListener('click', closeSettings);
-if(btnSettingsSave) btnSettingsSave.addEventListener('click', ()=>{ saveSettingsAndClose(); });
-// ----- Robust close handlers -----
+
+if(btnSettings) btnSettings.addEventListener('click', (e)=>{ e.stopPropagation(); menu.classList.add('hidden'); openSettings(); });
+
 function saveSettingsAndClose(){
-  opts.showPulse = !!optPulse.checked;
-  opts.showFooter = !!optFooter.checked;
-  saveOpts(opts);
-  applyOptions();
+  try{
+    if(optPulse) opts.showPulse = !!optPulse.checked;
+    if(optFooter) opts.showFooter = !!optFooter.checked;
+    saveOpts(opts);
+    applyOptions();
+  }catch(e){ console.error('settings save error', e); }
   closeSettings();
 }
-// Close on ESC and backdrop click
+if(btnSettingsSave) btnSettingsSave.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); saveSettingsAndClose(); });
+if(btnSettingsClose) btnSettingsClose.addEventListener('click', (e)=>{ e.preventDefault(); closeSettings(); });
 document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') closeSettings(); });
-if(modal) modal.addEventListener('click', (e)=>{
-  if(e.target === modal) closeSettings();
-});
-// Delegated fallback for Save (in case listener didn't bind for some reason)
+if(modal) modal.addEventListener('click', (e)=>{ if(e.target === modal) closeSettings(); });
 document.addEventListener('click', (e)=>{
-  if(e.target instanceof Element && e.target.closest('#settings-save')){
-    e.preventDefault(); saveSettingsAndClose();
-  }
+  if(e.target instanceof Element && e.target.closest('#settings-save')){ e.preventDefault(); saveSettingsAndClose(); }
 });
 
-
-// Routing
 function go(hash){
   if(hash==='#all'){ pageHome.classList.add('hidden'); pageAll.classList.remove('hidden'); }
   else { pageAll.classList.add('hidden'); pageHome.classList.remove('hidden'); }
   renderTables(); renderChart();
   if(location.hash !== hash) location.hash = hash;
 }
-if($('#nav-home')) $('#nav-home').addEventListener('click', ()=>go('#home'));
-if($('#nav-all')) $('#nav-all').addEventListener('click', ()=>go('#all'));
+const navHome = $('#nav-home'); const navAll = $('#nav-all');
+if(navHome) navHome.addEventListener('click', ()=>go('#home'));
+if(navAll) navAll.addEventListener('click', ()=>go('#all'));
 window.addEventListener('hashchange', ()=> go(location.hash||'#home'));
 go(location.hash||'#home');
 
-// Rendering
 function applyOptions(){
-  document.querySelectorAll('.col-pulse, td.col-pulse').forEach(el=>{
-    el.style.display = opts.showPulse ? '' : 'none';
-  });
+  document.querySelectorAll('.col-pulse, td.col-pulse').forEach(el=>{ el.style.display = opts.showPulse ? '' : 'none'; });
   if(opts.showFooter) footerNote.classList.remove('hidden'); else footerNote.classList.add('hidden');
 }
 
@@ -174,7 +153,6 @@ function renderTables(){
   tbodyAll.innerHTML = entries.map(rowHtml).join('');
   attachRowActions(tbodyAll);
   applyOptions();
-
   const narrow = matchMedia('(max-width:540px)').matches;
   if(narrow){
     document.querySelectorAll('tbody td.col-num').forEach((td, i)=>{
@@ -254,14 +232,11 @@ function renderChart(){
     options: {
       responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
       plugins: { legend: { labels: { color: '#6b7280' } } },
-      scales: {
-        x: { ticks: { color: '#6b7280', maxRotation: 0, autoSkip: true }, grid: { color: '#e5e7eb' } },
-        y: { grid: { color: '#e5e7eb' }, ticks: { color: '#6b7280' } }
-      }
+      scales: { x: { ticks: { color: '#6b7280', maxRotation: 0, autoSkip: true }, grid: { color: '#e5e7eb' } },
+                y: { grid: { color: '#e5e7eb' }, ticks: { color: '#6b7280' } } }
     }
   });
 }
 
-// Apply options & first paint
 applyOptions();
 renderTables(); renderChart();

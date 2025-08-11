@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>血圧管理ブック (PWA)</title>
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=7">
   <meta name="theme-color" content="#ffffff">
   <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script defer src="app.js"></script>
+  <script defer src="app.js?v=7"></script>
 </head>
 <body>
   <header>
@@ -36,7 +36,6 @@
   </header>
 
   <main>
-    <!-- Home Page: latest 5 -->
     <section id="page-home">
       <section class="form-card">
         <div class="field">
@@ -45,18 +44,9 @@
           <button class="now-btn" id="btn-now">Now</button>
         </div>
         <div class="grid3">
-          <div class="field">
-            <label>収縮(上)</label>
-            <input type="number" id="sys" inputmode="numeric" placeholder="120" />
-          </div>
-          <div class="field">
-            <label>拡張(下)</label>
-            <input type="number" id="dia" inputmode="numeric" placeholder="80" />
-          </div>
-          <div class="field">
-            <label>脈拍</label>
-            <input type="number" id="pul" inputmode="numeric" placeholder="70" />
-          </div>
+          <div class="field"><label>収縮(上)</label><input type="number" id="sys" inputmode="numeric" placeholder="120" /></div>
+          <div class="field"><label>拡張(下)</label><input type="number" id="dia" inputmode="numeric" placeholder="80" /></div>
+          <div class="field"><label>脈拍</label><input type="number" id="pul" inputmode="numeric" placeholder="70" /></div>
         </div>
         <button class="primary" id="btn-add">記録する</button>
         <div class="hint">範囲: 収縮 60–250 / 拡張 40–200 / 脈拍 30–200</div>
@@ -83,7 +73,6 @@
       </section>
     </section>
 
-    <!-- All records page -->
     <section id="page-all" class="hidden">
       <section class="table-card">
         <div class="table-title">全記録</div>
@@ -107,12 +96,11 @@
     <small>データは端末内に保存されます（オフライン可）</small>
   </footer>
 
-  <!-- Settings modal -->
   <div id="settings-modal" class="modal hidden">
     <div class="modal-card">
       <div class="modal-head">
         <h2>設定</h2>
-        <button id="settings-close">✕</button>
+        <button id="settings-close" type="button">✕</button>
       </div>
       <div class="modal-body">
         <label class="toggle">
@@ -126,7 +114,7 @@
         <div class="desc">※ 設定はこの端末に保存されます。</div>
       </div>
       <div class="modal-foot">
-        <button id="settings-save" class="primary">保存</button>
+        <button id="settings-save" class="primary" type="button">保存</button>
       </div>
     </div>
   </div>
